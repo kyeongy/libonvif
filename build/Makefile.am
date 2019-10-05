@@ -18,5 +18,10 @@ endif
 libonvif_la_LDFLAGS = -no-undefined
 libonvif_la_SOURCES = ../source/onvif.c ../source/sha1.c ../source/cencode.c
 
+bin_PROGRAMS = onvif-getall
+onvif_getall_LDADD = .libs/libonvif.la
+onvif_getall_SOURCES = ../example/onvif-getall.c
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libonvif.pc
+

@@ -2868,8 +2868,9 @@ fi
 
 
 # Define the identity of the package.
- PACKAGE='libonvif'
- VERSION='1.1.0'
+
+ PACKAGE=-Wall foreign
+ VERSION=subdir-objects
 
 
 cat >>confdefs.h <<_ACEOF

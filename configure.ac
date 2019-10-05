@@ -7,7 +7,7 @@ AC_INIT([libonvif], [1.1.0], [BUG-REPORT-ADDRESS])
 AC_CONFIG_SRCDIR([source/onvif.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIRS([m4])
-AM_INIT_AUTOMAKE([-Wall foreign])
+AM_INIT_AUTOMAKE([-Wall foreign], [subdir-objects])
 AM_PROG_AR
 LT_INIT([win32-dll])
 
