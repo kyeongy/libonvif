@@ -190,6 +190,7 @@ LIBRARY_API void prefix2mask(int prefix, char mask_buf[128]);
 LIBRARY_API int mask2prefix(char * mask_buf);
 LIBRARY_API void getIPAddress(char buf[128]);
 
+LIBRARY_API void dumpConfigAll (struct OnvifData *onvif_data);
 
 #ifdef _WIN32
     int gettimeofday(struct timeval *tp, struct timezone *tzp);

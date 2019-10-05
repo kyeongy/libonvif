@@ -55,6 +55,9 @@
 
 const int SHA1_DIGEST_SIZE = 20;
 
+static bool dump_reply = false;
+static void dumpReply(xmlDocPtr reply);
+
 int getNetworkInterfaces(struct OnvifData *onvif_data) {
     int result = 0;
     xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
@@ -1646,6 +1649,11 @@ xmlDocPtr sendCommandToCamera(char *cmd, char *xaddrs) {
     xmlDocPtr reply = xmlParseMemory(xml_reply, xml_length);
     char error_msg[1024] = {0};
 
+    /* Dump reply if requested */
+    if (dump_reply) {
+        dumpReply(reply);
+    }
+
     return reply;
 }
 
@@ -2433,3 +2441,74 @@ int fillRTSP(struct OnvifData *onvif_data) {
         return 0;
     }
 #endif
+
+
+void dumpXmlNode (xmlDocPtr doc, xmlNodePtr cur_node, char *prefix) {
+    const char *name;
+    const char *value;
+    char new_prefix[1024];
+    char attr[128];
+    xmlAttrPtr prop;
+
+    /* Traverse the tree */
+    for (; cur_node; cur_node = cur_node->next) {
+        if (cur_node->type == XML_ELEMENT_NODE) {
+            name = cur_node->name;
+            value = xmlNodeListGetString(doc, cur_node->xmlChildrenNode, 1);
+            if (value) {
+                printf("%s%s=%s\n", prefix ? prefix : "", name, value);
+            }
+            else {
+                sprintf(new_prefix, "%s%s.", prefix ? prefix : "", name);
+                for (prop = cur_node->properties; prop; prop = prop->next) {
+                    if (prop->children && prop->children->content) {
+                        printf("%s%s=%s\n", new_prefix, prop->name, prop->children->content);
+                    }
+                }
+            }
+        }
+        dumpXmlNode(doc, cur_node->children, new_prefix);
+    }
+}
+
+/* Dump xml document */
+void dumpReply(xmlDocPtr reply) {
+    if (reply != NULL) {
+        xmlChar *xpath = BAD_CAST "//s:Body/*";
+        xmlXPathObjectPtr body = getNodeSet(reply, xpath);
+        if (body) {
+            xmlNodeSetPtr nodeset = body->nodesetval;
+            for (int i=0; i<nodeset->nodeNr; i++) {
+                xmlNodePtr cur = nodeset->nodeTab[i];
+                /* Skip error return */
+                if (strcmp(cur->name, "Fault") != 0) {
+                    printf("[%s]\n", cur->name);
+                    dumpXmlNode(reply, cur->children, NULL);
+                }
+            }
+        }
+    }
+}
+
+/* Dump all available onvif device configuration */
+void dumpConfigAll (struct OnvifData *onvif_data) {
+    xmlDocPtr reply;
+
+    dump_reply = true;
+
+    getNetworkInterfaces(onvif_data);
+    getNetworkDefaultGateway(onvif_data);
+    getDNS(onvif_data);
+    getCapabilities(onvif_data);
+    getVideoEncoderConfigurationOptions(onvif_data);
+    getVideoEncoderConfiguration(onvif_data);
+    getProfile(onvif_data);
+    getOptions(onvif_data);
+    getImagingSettings(onvif_data);
+    getFirstProfileToken(onvif_data);
+    getTimeOffset(onvif_data);
+    getStreamUri(onvif_data);
+    getDeviceInformation(onvif_data);
+
+    dump_reply = false;
+}
